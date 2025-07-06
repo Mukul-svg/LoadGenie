@@ -96,7 +96,7 @@ class AnomalyDetector:
         try:
             # Use AI service to analyze
             ai_response = await self.ai_service.analyze_test_results(prompt)
-            analysis_result = json.loads(ai_response.get('k6_script', '{}'))
+            analysis_result = json.loads(ai_response.get('analysis_result', '{}'))
             
             return {
                 "anomalies_detected": analysis_result.get("anomalies_detected", False),
@@ -314,12 +314,70 @@ class K6Runner:
             logger.error(f"K6 test {test_id} failed: {e}")
             raise K6RunnerError(f"Test execution failed: {str(e)}")
     
+    def _ensure_default_export(self, script_content: str) -> str:
+        """
+        Ensure the script has a default export function.
+        If the script doesn't have 'export default', add one that randomly selects scenarios.
+        """
+        # Check if script already has a default export
+        if 'export default' in script_content:
+            return script_content
+        
+        # Check if script has scenario functions
+        has_scenarios = any(func in script_content for func in [
+            'browserScenario', 'shopperScenario', 'searcherScenario', 
+            'accountUserScenario', 'edgeCaseScenario'
+        ])
+        
+        if has_scenarios:
+            # Add default export that randomly selects scenarios based on weights
+            default_export = """
+
+// Default export function for CLI execution
+export default function() {
+  // Randomly select a scenario based on weights similar to the scenarios configuration
+  const rand = Math.random();
+  
+  if (rand < 0.4) {
+    // 40% - Browser scenario (equivalent to 40 VUs out of 100 total)
+    browserScenario();
+  } else if (rand < 0.65) {
+    // 25% - Shopper scenario
+    shopperScenario();
+  } else if (rand < 0.85) {
+    // 20% - Searcher scenario
+    searcherScenario();
+  } else if (rand < 0.95) {
+    // 10% - Account user scenario
+    accountUserScenario();
+  } else {
+    // 5% - Edge case scenario
+    edgeCaseScenario();
+  }
+}
+"""
+            return script_content + default_export
+        else:
+            # If no scenarios found, add a simple default export
+            default_export = """
+
+// Default export function for CLI execution
+export default function() {
+  // Simple default test - you may need to customize this based on your script
+  console.log('Executing default test function');
+}
+"""
+            return script_content + default_export
+
     async def _create_script_file(self, script_content: str, test_id: str) -> Path:
         """Create temporary K6 script file"""
         script_file = self.results_dir / f"test_{test_id}.js"
         
+        # Check if script has a default export, if not add one
+        modified_script = self._ensure_default_export(script_content)
+        
         with open(script_file, 'w') as f:
-            f.write(script_content)
+            f.write(modified_script)
         
         logger.debug(f"Created script file: {script_file}")
         return script_file
@@ -335,8 +393,31 @@ class K6Runner:
         # Add summary output
         cmd.extend(['--summary-export', str(script_file.parent / f"{script_file.stem}_summary.json")])
         
-        # Apply options
-        if options:
+        # Read script content to check for scenarios
+        with open(script_file, 'r') as f:
+            script_content = f.read()
+        
+        # Check if script has scenarios configuration
+        has_scenarios_config = 'scenarios:' in script_content
+        has_stages_config = 'stages:' in script_content
+        
+        # If script has both scenarios and stages, don't apply CLI options
+        # This lets the script's internal configuration take precedence
+        if has_scenarios_config and has_stages_config:
+            logger.info("Script has both scenarios and stages configuration, K6 will reject this. Using CLI options to override.")
+            # Override with CLI options to avoid the conflict
+            if options:
+                if 'vus' in options:
+                    cmd.extend(['--vus', str(options['vus'])])
+                if 'duration' in options:
+                    cmd.extend(['--duration', str(options['duration'])])
+                if 'iterations' in options:
+                    cmd.extend(['--iterations', str(options['iterations'])])
+        elif has_scenarios_config:
+            # Script has scenarios but no stages conflict, let it run as-is
+            logger.info("Script has scenarios configuration, ignoring CLI options in favor of script configuration")
+        elif options:
+            # No scenarios, apply CLI options
             if 'vus' in options:
                 cmd.extend(['--vus', str(options['vus'])])
             if 'duration' in options:

@@ -27,7 +27,7 @@ class Settings:
     AI_MODEL: str = os.getenv("AI_MODEL", "gemini-2.5-flash")
     AI_TEMPERATURE: float = float(os.getenv("AI_TEMPERATURE", "0.8"))
     AI_MAX_RETRIES: int = int(os.getenv("AI_MAX_RETRIES", "3"))
-    AI_TIMEOUT: int = int(os.getenv("AI_TIMEOUT", "60"))
+    AI_TIMEOUT: int = int(os.getenv("AI_TIMEOUT", "180"))
     
     # K6 Runner configuration
     K6_RESULTS_DIR: str = os.getenv("K6_RESULTS_DIR", "/tmp/k6_results")

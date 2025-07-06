@@ -5,7 +5,10 @@ API routes for script generation
 import time
 from fastapi import APIRouter, HTTPException, status, Request
 
-from app.models.schemas import ScenarioRequest, ScriptResponse, ErrorResponse
+from app.models.schemas import (
+    ScenarioRequest, ScriptResponse, ErrorResponse, 
+    ScriptValidationRequest, ScriptValidationResponse
+)
 from app.services.ai_service import get_ai_service, AIServiceError
 from app.core.logging import get_logger
 
@@ -180,3 +183,90 @@ async def generate_script_unified(request: Request) -> ScriptResponse:
     - application/x-www-form-urlencoded: Expects scenario_description field
     """
     return await generate_script(request)
+
+@router.post("/validate", response_model=ScriptValidationResponse, tags=["Script Validation"])
+async def validate_script(request: Request, validation_request: ScriptValidationRequest):
+    """
+    Validate a K6 script for quality and production readiness
+    
+    Args:
+        validation_request: ScriptValidationRequest containing the script to validate
+        
+    Returns:
+        ScriptValidationResponse with quality assessment and suggestions
+    """
+    try:
+        script = validation_request.script
+        
+        logger.info("Validating K6 script for quality assessment")
+        
+        # Get AI service and validate script
+        ai_service = get_ai_service()
+        validation_report = await ai_service.validate_and_improve_script(script)
+        
+        logger.info(f"Script validation completed: {validation_report['quality_rating']}")
+        
+        return ScriptValidationResponse(**validation_report)
+        
+    except AIServiceError as e:
+        logger.error(f"AI service error during validation: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail=f"AI service error: {str(e)}"
+        )
+    except ValueError as e:
+        logger.error(f"Validation error: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e)
+        )
+    except Exception as e:
+        logger.error(f"Unexpected error during script validation: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="An unexpected error occurred during script validation"
+        )
+
+
+@router.post("/generate-enhanced", response_model=ScriptResponse, tags=["Enhanced Script Generation"])
+async def generate_enhanced_script(request: Request, scenario: ScenarioRequest):
+    """
+    Generate a production-ready K6 script with enhanced validation and quality assurance
+    
+    Args:
+        scenario: ScenarioRequest containing the scenario description
+        
+    Returns:
+        ScriptResponse containing the generated k6 script with quality report
+    """
+    try:
+        logger.info("Generating enhanced K6 script with quality validation")
+        
+        # Generate script using the internal function
+        script_response = await _generate_script_internal(scenario.scenario_description)
+        
+        # Validate the generated script quality
+        ai_service = get_ai_service()
+        validation_report = await ai_service.validate_and_improve_script(script_response.script)
+        
+        # Add quality information to response
+        script_response.metadata = {
+            "quality_score": validation_report["quality_score"],
+            "quality_rating": validation_report["quality_rating"],
+            "production_ready": validation_report["overall_assessment"]["production_ready"],
+            "validation_warnings": validation_report.get("warnings", []),
+            "recommendations": validation_report.get("recommendations", [])
+        }
+        
+        logger.info(f"Enhanced script generated with quality: {validation_report['quality_rating']}")
+        
+        return script_response
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Unexpected error during enhanced script generation: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="An unexpected error occurred during enhanced script generation"
+        )

@@ -32,6 +32,10 @@ class ScriptResponse(BaseModel):
         description="Original scenario description",
         example="Create a k6 load test for a REST API"
     )
+    metadata: Optional[Dict[str, Any]] = Field(
+        None,
+        description="Additional metadata about script quality and validation"
+    )
 
 # New schemas for K6 test execution
 class K6TestOptions(BaseModel):
@@ -234,4 +238,27 @@ class HealthResponse(BaseModel):
         ..., 
         description="Check timestamp",
         example="2025-07-06 12:34:56"
+    )
+
+class ScriptValidationRequest(BaseModel):
+    """Request model for script validation"""
+    script: str = Field(
+        ...,
+        min_length=1,
+        description="K6 JavaScript script to validate",
+        example="import http from 'k6/http'; export default function() { ... }"
+    )
+
+class ScriptValidationResponse(BaseModel):
+    """Response model for script validation"""
+    is_valid: bool = Field(..., description="Whether the script is valid")
+    quality_score: int = Field(..., description="Quality score out of 100")
+    quality_rating: str = Field(..., description="Quality rating (Poor/Fair/Good/Excellent)")
+    errors: List[str] = Field(default=[], description="Critical errors that must be fixed")
+    warnings: List[str] = Field(default=[], description="Non-critical warnings")
+    suggestions: List[str] = Field(default=[], description="Improvement suggestions")
+    recommendations: List[str] = Field(default=[], description="Specific recommendations")
+    overall_assessment: Dict[str, bool] = Field(
+        default={},
+        description="Overall assessment flags"
     )
