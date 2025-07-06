@@ -34,13 +34,50 @@ uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
 k6 version
 
 # Test the service
-curl http://localhost:8000/api/v1/health
+curl http://localhost:8000/health
 curl http://localhost:8000/api/v1/test/health
 ```
 
 ## 📊 Using the API
 
-### 1. Run a Load Test
+### 1. Generate K6 Scripts with AI
+
+**The most powerful feature** - Generate K6 test scripts from natural language descriptions:
+
+**Basic Script Generation:**
+```bash
+curl -X POST "http://localhost:8000/generate-script" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "scenario_description": "Test a REST API with 10 users for 30 seconds, checking login endpoint"
+  }'
+```
+
+**Advanced Script Generation Examples:**
+```bash
+# E-commerce load test
+curl -X POST "http://localhost:8000/generate-script" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "scenario_description": "Test an e-commerce site with 50 users browsing products, adding items to cart, and checking out. Include authentication and payment flow simulation."
+  }'
+
+# API stress test
+curl -X POST "http://localhost:8000/generate-script" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "scenario_description": "Stress test a GraphQL API with complex queries, starting with 10 users and ramping up to 100 users over 2 minutes"
+  }'
+
+# Database performance test
+curl -X POST "http://localhost:8000/generate-script" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "scenario_description": "Test database performance with concurrent read/write operations, simulating 25 users performing CRUD operations on user profiles"
+  }'
+```
+
+### 2. Run a Load Test
 
 **Basic Test:**
 ```bash
@@ -68,7 +105,7 @@ curl -X POST "http://localhost:8000/api/v1/test/run" \
   }'
 ```
 
-### 2. View Test History
+### 3. View Test History
 
 ```bash
 # Get recent test history
@@ -78,7 +115,7 @@ curl "http://localhost:8000/api/v1/test/history?limit=10"
 curl "http://localhost:8000/api/v1/test/statistics"
 ```
 
-### 3. Search Tests
+### 4. Search Tests
 
 ```bash
 # Search for tests with anomalies
@@ -91,7 +128,7 @@ curl "http://localhost:8000/api/v1/test/search?min_error_rate=5.0"
 curl "http://localhost:8000/api/v1/test/search?max_response_time=2000"
 ```
 
-### 4. Get Detailed Results
+### 5. Get Detailed Results
 
 ```bash
 # Get detailed results for a specific test
@@ -108,6 +145,30 @@ import json
 
 # Service URL
 BASE_URL = "http://localhost:8000/api/v1"
+
+def generate_k6_script(description):
+    """Generate a K6 script from natural language description"""
+    
+    payload = {
+        "scenario_description": description
+    }
+    
+    response = requests.post("http://localhost:8000/generate-script", json=payload)
+    
+    if response.status_code == 200:
+        result = response.json()
+        print(f"✅ Script generated successfully!")
+        print(f"📝 Description: {result['scenario_description']}")
+        print(f"⏰ Generated at: {result['generated_at']}")
+        print(f"\n📋 Generated K6 Script:")
+        print("=" * 50)
+        print(result['script'])
+        print("=" * 50)
+        return result['script']
+    else:
+        print(f"❌ Script generation failed: {response.status_code}")
+        print(f"   Error: {response.text}")
+        return None
 
 def run_load_test(script, vus=5, duration="10s"):
     """Run a K6 load test"""
@@ -144,8 +205,18 @@ def run_load_test(script, vus=5, duration="10s"):
         print(f"❌ Test failed: {response.text}")
         return None
 
-# Example usage
-script = """
+# Example usage - Complete workflow with AI script generation
+description = "Test a REST API for user authentication with 15 users for 45 seconds, including login, profile access, and logout"
+
+# Step 1: Generate the script with AI
+script = generate_k6_script(description)
+
+if script:
+    # Step 2: Run the generated script
+    result = run_load_test(script, vus=15, duration="45s")
+    
+# Alternative: Use a manual script
+manual_script = """
 import http from 'k6/http';
 import { check } from 'k6';
 
@@ -158,13 +229,38 @@ export default function() {
 }
 """
 
-# Run the test
-result = run_load_test(script, vus=10, duration="30s")
+# Run the manual test
+result = run_load_test(manual_script, vus=10, duration="30s")
 ```
 
 ## 🎯 Example Use Cases
 
-### 1. API Performance Testing
+### 1. Complete AI-Powered Workflow
+
+**Step 1: Generate Script from Description**
+```bash
+curl -X POST "http://localhost:8000/generate-script" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "scenario_description": "Test an e-commerce checkout flow with 20 users, including product browsing, cart operations, and payment processing over 60 seconds"
+  }'
+```
+
+**Step 2: Use Generated Script in Test**
+```bash
+# Take the generated script and use it in the test run endpoint
+curl -X POST "http://localhost:8000/api/v1/test/run" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "script": "[GENERATED_SCRIPT_FROM_STEP_1]",
+    "options": {
+      "vus": 20,
+      "duration": "60s"
+    }
+  }'
+```
+
+### 2. API Performance Testing
 
 ```javascript
 // K6 script for API testing
