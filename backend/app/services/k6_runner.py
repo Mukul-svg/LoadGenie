@@ -256,6 +256,7 @@ class K6Runner:
         """
         test_id = str(uuid.uuid4())
         timestamp = datetime.now().isoformat()
+        start_time = time.time()
         
         try:
             # Create temporary script file
@@ -266,7 +267,6 @@ class K6Runner:
             
             # Execute K6 test
             logger.info(f"Starting K6 test {test_id}")
-            start_time = time.time()
             
             result = await self._execute_k6_test(cmd, test_id)
             
@@ -289,6 +289,7 @@ class K6Runner:
                 "execution_time": execution_time,
                 "script_content": script_content,
                 "options": options or {},
+                "status": "completed",
                 "metrics": {
                     "response_time_avg": k6_result.response_time_avg,
                     "response_time_p95": k6_result.response_time_p95,
@@ -311,7 +312,42 @@ class K6Runner:
             return test_summary
             
         except Exception as e:
+            execution_time = time.time() - start_time
             logger.error(f"K6 test {test_id} failed: {e}")
+            
+            # Save failed test result
+            failed_test_summary = {
+                "test_id": test_id,
+                "timestamp": timestamp,
+                "execution_time": execution_time,
+                "script_content": script_content,
+                "options": options or {},
+                "status": "failed",
+                "metrics": {
+                    "response_time_avg": None,
+                    "response_time_p95": None,
+                    "error_rate": None,
+                    "requests_per_second": None,
+                    "virtual_users": None,
+                    "total_requests": None,
+                    "duration_ms": None
+                },
+                "anomaly_analysis": {
+                    "anomalies_detected": True,
+                    "severity": "high",
+                    "issues": [f"Test execution failed: {str(e)}"],
+                    "recommendations": ["Check test script syntax and K6 configuration"],
+                    "confidence": 1.0
+                },
+                "raw_output": {},
+                "console_output": str(e)
+            }
+            
+            try:
+                await self._save_test_results(failed_test_summary)
+            except Exception as save_error:
+                logger.error(f"Failed to save failed test result: {save_error}")
+            
             raise K6RunnerError(f"Test execution failed: {str(e)}")
     
     def _ensure_default_export(self, script_content: str) -> str:
@@ -527,6 +563,7 @@ export default function() {
                     "test_id": test_data.get("test_id"),
                     "timestamp": test_data.get("timestamp"),
                     "execution_time": test_data.get("execution_time"),
+                    "status": test_data.get("status", "completed"),  # Default to completed for legacy records
                     "metrics": test_data.get("metrics"),
                     "anomaly_analysis": test_data.get("anomaly_analysis")
                 })

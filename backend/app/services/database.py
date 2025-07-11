@@ -52,6 +52,7 @@ class DatabaseService:
                     execution_time REAL NOT NULL,
                     script_content TEXT NOT NULL,
                     test_options TEXT,
+                    status TEXT DEFAULT 'completed',
                     response_time_avg REAL,
                     response_time_p95 REAL,
                     error_rate REAL,
@@ -69,6 +70,14 @@ class DatabaseService:
                     created_at TEXT DEFAULT CURRENT_TIMESTAMP
                 )
             """)
+            
+            # Add status column if it doesn't exist (for existing databases)
+            try:
+                await db.execute("ALTER TABLE test_runs ADD COLUMN status TEXT DEFAULT 'completed'")
+                logger.info("Added status column to existing test_runs table")
+            except Exception:
+                # Column already exists or other error - that's okay
+                pass
             
             # Create indexes
             await db.execute("""
@@ -107,18 +116,19 @@ class DatabaseService:
             
             cursor = await db.execute("""
                 INSERT INTO test_runs (
-                    test_id, timestamp, execution_time, script_content, test_options,
+                    test_id, timestamp, execution_time, script_content, test_options, status,
                     response_time_avg, response_time_p95, error_rate, requests_per_second,
                     virtual_users, total_requests, duration_ms,
                     anomalies_detected, severity, issues, recommendations, confidence,
                     raw_output, console_output
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """, (
                 test_summary["test_id"],
                 test_summary["timestamp"],
                 test_summary["execution_time"],
                 test_summary["script_content"],
                 json.dumps(test_summary.get("options", {})),
+                test_summary.get("status", "completed"),
                 metrics.get("response_time_avg"),
                 metrics.get("response_time_p95"),
                 metrics.get("error_rate"),
@@ -372,6 +382,7 @@ class DatabaseService:
             "execution_time": row["execution_time"],
             "script_content": row["script_content"],
             "options": json.loads(row["test_options"] or "{}"),
+            "status": row["status"],
             "metrics": {
                 "response_time_avg": row["response_time_avg"],
                 "response_time_p95": row["response_time_p95"],
@@ -398,6 +409,7 @@ class DatabaseService:
             "test_id": row["test_id"],
             "timestamp": row["timestamp"],
             "execution_time": row["execution_time"],
+            "status": row["status"],
             "metrics": {
                 "response_time_avg": row["response_time_avg"],
                 "response_time_p95": row["response_time_p95"],

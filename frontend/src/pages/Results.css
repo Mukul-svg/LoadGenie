@@ -1,0 +1,331 @@
+.results {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1rem;
+}
+
+.no-results {
+  text-align: center;
+  padding: 4rem 0;
+}
+
+.no-results-content h1 {
+  font-size: 2.5rem;
+  margin-bottom: 2rem;
+  color: #2c3e50;
+}
+
+.empty-state {
+  background: rgba(255, 255, 255, 0.8);
+  padding: 3rem;
+  border-radius: 12px;
+  max-width: 500px;
+  margin: 0 auto;
+}
+
+.empty-state h3 {
+  margin-bottom: 1rem;
+  color: #2c3e50;
+}
+
+.empty-state p {
+  margin-bottom: 2rem;
+  color: #555;
+}
+
+.results-header {
+  text-align: center;
+  margin-bottom: 3rem;
+}
+
+.results-header h1 {
+  font-size: 2.5rem;
+  margin-bottom: 1rem;
+  color: #2c3e50;
+}
+
+.results-header p {
+  color: #555;
+  font-size: 1.1rem;
+}
+
+.test-id {
+  font-family: 'Courier New', monospace;
+  font-size: 0.9rem;
+  color: #7f8c8d;
+}
+
+.results-content {
+  display: grid;
+  gap: 3rem;
+}
+
+.summary-section {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1.5rem;
+}
+
+.summary-card {
+  background: rgba(255, 255, 255, 0.9);
+  padding: 2rem;
+  border-radius: 12px;
+  text-align: center;
+}
+
+.summary-card h3 {
+  margin-bottom: 1rem;
+  color: #2c3e50;
+  font-size: 1.1rem;
+}
+
+.summary-card .metric-value {
+  font-size: 2rem;
+  font-weight: bold;
+  color: #3498db;
+}
+
+.metrics-section {
+  background: rgba(255, 255, 255, 0.8);
+  padding: 2rem;
+  border-radius: 12px;
+  border: 2px solid #ddd;
+}
+
+.metrics-section h2 {
+  margin-bottom: 1.5rem;
+  color: #2c3e50;
+}
+
+.metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1rem;
+}
+
+.metric-item {
+  background: rgba(255, 255, 255, 0.9);
+  padding: 1.5rem;
+  border-radius: 8px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.metric-name {
+  font-weight: bold;
+  color: #2c3e50;
+  font-size: 0.9rem;
+}
+
+.metric-value {
+  font-size: 1.2rem;
+  color: #3498db;
+  font-weight: bold;
+}
+
+.anomaly-section {
+  background: rgba(255, 255, 255, 0.8);
+  padding: 2rem;
+  border-radius: 12px;
+  border: 2px solid #e74c3c;
+}
+
+.anomaly-section h2 {
+  margin-bottom: 1.5rem;
+  color: #e74c3c;
+}
+
+.anomaly-summary {
+  background: rgba(255, 255, 255, 0.9);
+  padding: 1.5rem;
+  border-radius: 8px;
+  margin-bottom: 2rem;
+}
+
+.anomaly-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.anomaly-header h3 {
+  margin: 0;
+  color: #2c3e50;
+}
+
+.anomaly-status {
+  font-weight: bold;
+  font-size: 1.1rem;
+}
+
+.anomaly-summary-text {
+  color: #555;
+  line-height: 1.6;
+  margin: 0;
+}
+
+.anomalies-list h4 {
+  margin-bottom: 1rem;
+  color: #e74c3c;
+}
+
+.anomaly-item {
+  background: rgba(255, 255, 255, 0.9);
+  padding: 1.5rem;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+  display: flex;
+  gap: 1rem;
+}
+
+.anomaly-icon {
+  font-size: 2rem;
+  flex-shrink: 0;
+}
+
+.anomaly-content {
+  flex: 1;
+}
+
+.anomaly-type {
+  font-weight: bold;
+  color: #e74c3c;
+  margin-bottom: 0.5rem;
+}
+
+.anomaly-description {
+  color: #555;
+  margin-bottom: 0.5rem;
+  line-height: 1.5;
+}
+
+.anomaly-recommendation {
+  background: rgba(52, 152, 219, 0.1);
+  padding: 1rem;
+  border-radius: 6px;
+  color: #2c3e50;
+  border-left: 4px solid #3498db;
+}
+
+.recommendations-section {
+  margin-top: 2rem;
+}
+
+.recommendations-section h4 {
+  margin-bottom: 1rem;
+  color: #f39c12;
+}
+
+.recommendations-list {
+  display: grid;
+  gap: 1rem;
+}
+
+.recommendation-item {
+  background: rgba(243, 156, 18, 0.1);
+  padding: 1rem;
+  border-radius: 8px;
+  border-left: 4px solid #f39c12;
+  color: #2c3e50;
+}
+
+.actions-section {
+  text-align: center;
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.btn {
+  padding: 1rem 2rem;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: bold;
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-block;
+  transition: all 0.3s ease;
+  font-family: inherit;
+}
+
+.btn-primary {
+  background: #3498db;
+  color: white;
+}
+
+.btn-primary:hover {
+  background: #2980b9;
+  transform: translateY(-2px);
+}
+
+.btn-secondary {
+  background: #e74c3c;
+  color: white;
+}
+
+.btn-secondary:hover {
+  background: #c0392b;
+  transform: translateY(-2px);
+}
+
+.btn-tertiary {
+  background: #95a5a6;
+  color: white;
+}
+
+.btn-tertiary:hover {
+  background: #7f8c8d;
+  transform: translateY(-2px);
+}
+
+@media (max-width: 768px) {
+  .results-header h1 {
+    font-size: 2rem;
+  }
+  
+  .summary-section {
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  }
+  
+  .summary-card {
+    padding: 1rem;
+  }
+  
+  .summary-card .metric-value {
+    font-size: 1.5rem;
+  }
+  
+  .metrics-section,
+  .anomaly-section {
+    padding: 1rem;
+  }
+  
+  .metrics-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .anomaly-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+  
+  .anomaly-item {
+    flex-direction: column;
+    text-align: center;
+  }
+  
+  .actions-section {
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .btn {
+    width: 100%;
+    max-width: 300px;
+  }
+}
