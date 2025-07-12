@@ -1,6 +1,6 @@
 # LoadGenie - AI-Powered Performance Test Generator
 
-## Product Overview
+## Project Overview
 
 **LoadGenie** is an intelligent performance testing assistant that transforms the complex task of load testing into an intuitive, AI-driven experience. By leveraging artificial intelligence, LoadGenie enables developers and QA teams to generate realistic performance test scripts, execute comprehensive load tests, and analyze results with minimal expertise required.
 
@@ -42,9 +42,7 @@ Performance testing has traditionally been a complex, expertise-heavy domain. Lo
 - **Monitoring Integration**: Grafana Cloud, Prometheus for metrics collection
 - **CI/CD Pipeline**: Seamless integration with existing development workflows
 
-## MVP Feature Set
-
-### ✅ Core Features (In Scope)
+### ✅ Core Features
 
 #### 1. AI Load Script Generation
 - Natural language input processing
@@ -77,7 +75,7 @@ Performance testing has traditionally been a complex, expertise-heavy domain. Lo
 - Basic role-based access control
 - Secure test data handling
 
-### 🔄 Future Enhancements (Out of MVP Scope)
+### 🔄 Future Enhancements
 
 #### Advanced Features
 - Multi-region distributed load testing
